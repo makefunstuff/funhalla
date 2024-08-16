@@ -7,6 +7,7 @@ import "base:intrinsics"
 import "base:runtime"
 import "core:c/libc"
 import "core:fmt"
+import "core:math/linalg"
 import "core:os"
 
 import "shader"
@@ -192,8 +193,8 @@ main :: proc() {
 	image.image_free(data)
 
 	shader.use(shdr)
-	gl.Uniform1i(gl.GetUniformLocation(shdr.id, cstring("texture1")), i32(0))
-	gl.Uniform1i(gl.GetUniformLocation(shdr.id, cstring("texture2")), i32(1))
+	shader.set_value(shdr, cstring("texture1"), 0)
+	shader.set_value(shdr, cstring("texture2"), 1)
 
 	//gl.PolygonMode(gl.FRONT_AND_BACK, gl.LINE)
 
@@ -208,7 +209,18 @@ main :: proc() {
 		gl.ActiveTexture(gl.TEXTURE1)
 		gl.BindTexture(gl.TEXTURE_2D, texture2)
 
+		trans_vector := linalg.Vector3f32{0.5, -0.5, 0.0}
+		transform := linalg.matrix4_translate(trans_vector)
+		transform *= linalg.matrix4_rotate_f32(
+			f32(glfw.GetTime()),
+			linalg.Vector3f32{0.0, 0.0, 1.0},
+		)
+
 		shader.use(shdr)
+
+		transform_loc := gl.GetUniformLocation(shdr.id, cstring("transform"))
+		gl.UniformMatrix4fv(transform_loc, 1, gl.FALSE, &transform[0, 0])
+
 		gl.BindVertexArray(vao)
 		gl.DrawElements(gl.TRIANGLES, 6, gl.UNSIGNED_INT, nil)
 
