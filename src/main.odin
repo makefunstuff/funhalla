@@ -61,46 +61,192 @@ main :: proc() {
 	}
 
 	vertices: []f32 = {
-		0.5,
-		0.5,
-		0.0,
-		1.0,
-		0.0,
-		0.0,
-		1.0,
-		1.0, // top right
-		0.5,
 		-0.5,
-		0.0,
-		0.0,
-		1.0,
-		0.0,
-		1.0,
-		0.0, // bottom right
 		-0.5,
 		-0.5,
 		0.0,
 		0.0,
-		0.0,
+		0.5,
+		-0.5,
+		-0.5,
 		1.0,
 		0.0,
-		0.0, // bottom let
+		0.5,
+		0.5,
+		-0.5,
+		1.0,
+		1.0,
+		0.5,
+		0.5,
+		-0.5,
+		1.0,
+		1.0,
+		-0.5,
+		0.5,
+		-0.5,
+		0.0,
+		1.0,
+		-0.5,
+		-0.5,
+		-0.5,
+		0.0,
+		0.0,
+		-0.5,
 		-0.5,
 		0.5,
 		0.0,
-		1.0,
+		0.0,
+		0.5,
+		-0.5,
+		0.5,
 		1.0,
 		0.0,
+		0.5,
+		0.5,
+		0.5,
+		1.0,
+		1.0,
+		0.5,
+		0.5,
+		0.5,
+		1.0,
+		1.0,
+		-0.5,
+		0.5,
+		0.5,
+		0.0,
+		1.0,
+		-0.5,
+		-0.5,
+		0.5,
+		0.0,
+		0.0,
+		-0.5,
+		0.5,
+		0.5,
+		1.0,
+		0.0,
+		-0.5,
+		0.5,
+		-0.5,
+		1.0,
+		1.0,
+		-0.5,
+		-0.5,
+		-0.5,
+		0.0,
+		1.0,
+		-0.5,
+		-0.5,
+		-0.5,
+		0.0,
+		1.0,
+		-0.5,
+		-0.5,
+		0.5,
+		0.0,
+		0.0,
+		-0.5,
+		0.5,
+		0.5,
+		1.0,
+		0.0,
+		0.5,
+		0.5,
+		0.5,
+		1.0,
+		0.0,
+		0.5,
+		0.5,
+		-0.5,
+		1.0,
+		1.0,
+		0.5,
+		-0.5,
+		-0.5,
+		0.0,
+		1.0,
+		0.5,
+		-0.5,
+		-0.5,
+		0.0,
+		1.0,
+		0.5,
+		-0.5,
+		0.5,
+		0.0,
+		0.0,
+		0.5,
+		0.5,
+		0.5,
+		1.0,
+		0.0,
+		-0.5,
+		-0.5,
+		-0.5,
+		0.0,
+		1.0,
+		0.5,
+		-0.5,
+		-0.5,
+		1.0,
+		1.0,
+		0.5,
+		-0.5,
+		0.5,
+		1.0,
+		0.0,
+		0.5,
+		-0.5,
+		0.5,
+		1.0,
+		0.0,
+		-0.5,
+		-0.5,
+		0.5,
+		0.0,
+		0.0,
+		-0.5,
+		-0.5,
+		-0.5,
+		0.0,
+		1.0,
+		-0.5,
+		0.5,
+		-0.5,
+		0.0,
+		1.0,
+		0.5,
+		0.5,
+		-0.5,
+		1.0,
+		1.0,
+		0.5,
+		0.5,
+		0.5,
+		1.0,
+		0.0,
+		0.5,
+		0.5,
+		0.5,
+		1.0,
+		0.0,
+		-0.5,
+		0.5,
+		0.5,
+		0.0,
+		0.0,
+		-0.5,
+		0.5,
+		-0.5,
 		0.0,
 		1.0,
 	}
 
-	indices := []i32{0, 1, 3, 1, 2, 3}
 
-	vbo, vao, ebo, texture1, texture2: u32
+	vbo, vao, texture1, texture2: u32
 	gl.GenVertexArrays(1, &vao)
 	gl.GenBuffers(1, &vbo)
-	gl.GenBuffers(1, &ebo)
 
 	gl.BindVertexArray(vao)
 	gl.BindBuffer(gl.ARRAY_BUFFER, vbo)
@@ -111,23 +257,12 @@ main :: proc() {
 		raw_data(vertices),
 		gl.STATIC_DRAW,
 	)
-	gl.BindBuffer(gl.ELEMENT_ARRAY_BUFFER, ebo)
-	gl.BufferData(
-		gl.ELEMENT_ARRAY_BUFFER,
-		size_of(i32) * len(indices),
-		raw_data(indices),
-		gl.STATIC_DRAW,
-	)
 
-
-	gl.VertexAttribPointer(0, 3, gl.FLOAT, gl.FALSE, 8 * size_of(f32), 0)
+	gl.VertexAttribPointer(0, 3, gl.FLOAT, gl.FALSE, 5 * size_of(f32), 0)
 	gl.EnableVertexAttribArray(0)
 
-	gl.VertexAttribPointer(1, 3, gl.FLOAT, gl.FALSE, 8 * size_of(f32), 3 * size_of(f32))
+	gl.VertexAttribPointer(1, 2, gl.FLOAT, gl.FALSE, 5 * size_of(f32), 3 * size_of(f32))
 	gl.EnableVertexAttribArray(1)
-
-	gl.VertexAttribPointer(2, 2, gl.FLOAT, gl.FALSE, 8 * size_of(f32), 6 * size_of(f32))
-	gl.EnableVertexAttribArray(2)
 
 	gl.GenTextures(1, &texture1)
 	gl.BindTexture(gl.TEXTURE_2D, texture1)
@@ -198,21 +333,23 @@ main :: proc() {
 
 	//gl.PolygonMode(gl.FRONT_AND_BACK, gl.LINE)
 
+	gl.Enable(gl.DEPTH_TEST)
+
 	for !glfw.WindowShouldClose(window) {
 		process_input(&window)
 
 		gl.ClearColor(0.2, 0.3, 0.3, 1.0)
-		gl.Clear(gl.COLOR_BUFFER_BIT)
+		gl.Clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT)
 
 		gl.ActiveTexture(gl.TEXTURE0)
 		gl.BindTexture(gl.TEXTURE_2D, texture1)
 		gl.ActiveTexture(gl.TEXTURE1)
 		gl.BindTexture(gl.TEXTURE_2D, texture2)
 
-		model := linalg.matrix4_rotate(
-			f32(linalg.to_radians(-55.0)),
-			linalg.Vector3f32{1.0, 0.0, 0.0},
-		)
+		rotation: f32 = f32(glfw.GetTime())
+
+		model := linalg.matrix4_rotate(rotation, linalg.Vector3f32{0.5, 1.0, 0.0})
+
 		aspect: f32 = 800.0 / 600.0
 		view := linalg.matrix4_translate(linalg.Vector3f32{0.0, 0.0, -3.0})
 		projection := linalg.matrix4_perspective_f32(
@@ -235,13 +372,12 @@ main :: proc() {
 
 
 		gl.BindVertexArray(vao)
-		gl.DrawElements(gl.TRIANGLES, 6, gl.UNSIGNED_INT, nil)
+		gl.DrawArrays(gl.TRIANGLES, 0, 36)
 
 		glfw.SwapBuffers(window)
 		glfw.PollEvents()
 	}
 
-	gl.DeleteBuffers(1, &ebo)
 	gl.DeleteVertexArrays(1, &vao)
 	gl.DeleteBuffers(1, &vbo)
 }
