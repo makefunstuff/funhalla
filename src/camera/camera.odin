@@ -105,6 +105,8 @@ process_mouse_move :: proc(
 			pitch = -89.0
 		}
 	}
+
+	_update_camera_vectors(camera)
 }
 
 process_mouse_scroll :: proc(using camera: ^Camera, yoffset: f32) {
