@@ -7,6 +7,7 @@ import "base:intrinsics"
 import "base:runtime"
 import "core:c/libc"
 import "core:fmt"
+import "core:math"
 import "core:math/linalg"
 import "core:os"
 
@@ -15,13 +16,101 @@ import "shader"
 GL_MAJOR_VERSION :: 3
 GL_MINOR_VERSION :: 3
 
+Vec3 :: linalg.Vector3f32
+
+camera_pos := Vec3{0.0, 0.0, 3.0}
+camera_front := Vec3{0.0, 0.0, -1.0}
+camera_up := Vec3{0.0, 1.0, 0.0}
+
+delta_time: f32 = 0.0
+last_frame: f32 = 0.0
+
+SCREEN_WIDTH: f32 : 800.0
+SCREEN_HEIGTH: f32 : 600.0
+
+first_mouse := true
+yaw: f32 = -90.0
+pitch: f32 = 0.0
+last_x: f32 = 800.0 / 2.0
+last_y: f32 = 800.0 / 2.0
+fov: f32 = 45.0
+
 framebuffer_size_callback :: proc "cdecl" (window: glfw.WindowHandle, width, height: i32) {
 	gl.Viewport(0, 0, width, height)
+}
+
+mouse_callback :: proc "cdecl" (window: glfw.WindowHandle, xpos_in, ypos_in: f64) {
+	xpos: f32 = f32(xpos_in)
+	ypos: f32 = f32(ypos_in)
+
+	if first_mouse {
+		last_x = xpos
+		last_y = ypos
+		first_mouse = false
+	}
+
+	xoffset: f32 = xpos - last_x
+	yoffset: f32 = last_y - ypos
+	last_x = xpos
+	last_y = ypos
+
+	sensitivity: f32 = 0.1
+
+	xoffset *= sensitivity
+	yoffset *= sensitivity
+
+	yaw += xoffset
+	pitch += yoffset
+
+	if pitch > 89.0 {
+		pitch = 89.0
+	}
+	if pitch < -89.0 {
+		pitch = -89.0
+	}
+
+	front_x: f32 = math.cos(linalg.to_radians(yaw)) * math.cos(linalg.to_radians(pitch))
+	front_y: f32 = math.sin(linalg.to_radians(pitch))
+	front_z: f32 = math.sin(linalg.to_radians(yaw)) * math.cos(linalg.to_radians(pitch))
+
+	camera_front = linalg.vector_normalize(Vec3{front_x, front_y, front_z})
+}
+
+mouse_scroll_callback :: proc "cdecl" (window: glfw.WindowHandle, xoffset, yoffset: f64) {
+	fov -= f32(yoffset)
+
+	if fov < 1.0 {
+		fov = 1.0
+	}
+	if fov > 45.0 {
+		fov = 45.0
+	}
 }
 
 process_input :: proc(window: ^glfw.WindowHandle) {
 	if glfw.GetKey(window^, glfw.KEY_ESCAPE) == glfw.PRESS {
 		glfw.SetWindowShouldClose(window^, true)
+	}
+
+	camera_speed: f32 = 2.5 * delta_time
+
+	if glfw.GetKey(window^, glfw.KEY_W) == glfw.PRESS {
+		camera_pos += camera_speed * camera_front
+	}
+
+	if glfw.GetKey(window^, glfw.KEY_S) == glfw.PRESS {
+		camera_pos -= camera_speed * camera_front
+	}
+
+	if glfw.GetKey(window^, glfw.KEY_A) == glfw.PRESS {
+		cross_a := linalg.vector_cross3(camera_front, camera_up)
+		camera_pos -= linalg.vector_normalize(cross_a) * camera_speed
+
+	}
+
+	if glfw.GetKey(window^, glfw.KEY_D) == glfw.PRESS {
+		cross_d := linalg.vector_cross3(camera_front, camera_up)
+		camera_pos += linalg.vector_normalize(cross_d) * camera_speed
 	}
 }
 
@@ -53,6 +142,10 @@ main :: proc() {
 
 	gl.Viewport(0, 0, 800, 600)
 	glfw.SetFramebufferSizeCallback(window, framebuffer_size_callback)
+
+	glfw.SetCursorPosCallback(window, mouse_callback)
+	glfw.SetScrollCallback(window, mouse_scroll_callback)
+	glfw.SetInputMode(window, glfw.CURSOR, glfw.CURSOR_DISABLED)
 
 	shdr, err := shader.shader_init("res/shaders/triangle.vs", "res/shaders/triangle.fs")
 	if err == shader.SHADER_LOAD_ERROR {
@@ -349,6 +442,10 @@ main :: proc() {
 	}
 
 	for !glfw.WindowShouldClose(window) {
+		current_frame: f32 = f32(glfw.GetTime())
+		delta_time = current_frame - last_frame
+		last_frame = current_frame
+
 		process_input(&window)
 
 		gl.ClearColor(0.2, 0.3, 0.3, 1.0)
@@ -361,13 +458,11 @@ main :: proc() {
 
 
 		aspect: f32 = 800.0 / 600.0
-		view := linalg.matrix4_translate(linalg.Vector3f32{0.0, 0.0, -3.0})
-		projection := linalg.matrix4_perspective_f32(
-			f32(linalg.to_radians(45.0)),
-			aspect,
-			0.1,
-			100.0,
-		)
+
+		view := linalg.matrix4_look_at(camera_pos, camera_pos + camera_front, camera_up)
+
+
+		projection := linalg.matrix4_perspective_f32(linalg.to_radians(fov), aspect, 0.1, 100.0)
 
 		view_location := gl.GetUniformLocation(shdr.id, "view")
 		gl.UniformMatrix4fv(view_location, 1, gl.FALSE, &view[0][0])
