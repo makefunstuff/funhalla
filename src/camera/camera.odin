@@ -44,12 +44,20 @@ camera_init :: proc(
 	yaw: f32 = YAW,
 	pitch: f32 = PITCH,
 	front: Vec3 = DEFAULT_FRONT,
+	move_speed: f32 = SPEED,
+	mouse_sensitivity: f32 = SENSITIVITY,
+	zoom: f32 = ZOOM,
 ) -> ^Camera {
 	c := new(Camera)
+	c.front = front
 	c.position = position
 	c.world_up = up
 	c.yaw = yaw
 	c.pitch = pitch
+	c.up = up
+	c.mouse_sensitivity = mouse_sensitivity
+	c.zoom = zoom
+	c.move_speed = move_speed
 	_update_camera_vectors(c)
 	return c
 }
@@ -79,11 +87,11 @@ process_keyboard :: proc(using camera: ^Camera, direction: CameraMovement, dt: f
 
 process_mouse_move :: proc(
 	using camera: ^Camera,
-	xoffset, yoffset: f32,
+	xoffset_in, yoffset_in: f32,
 	constraint_pitch: bool = true,
 ) {
-	xoffset *= mouse_sensitivity
-	yoffset *= mouse_sensitivity
+	xoffset: f32 = xoffset_in * mouse_sensitivity
+	yoffset: f32 = yoffset_in * mouse_sensitivity
 
 	yaw += xoffset
 	pitch += yoffset
@@ -99,32 +107,27 @@ process_mouse_move :: proc(
 	}
 }
 
-process_mouse_scroll :: proc(
-  using camera: ^Camera,
-  yoffset : f32
-) -> {
-  zoom -= yoffset
+process_mouse_scroll :: proc(using camera: ^Camera, yoffset: f32) {
+	zoom -= yoffset
 
-  if zoom < 1.0 {
-    zoom = 1.0
-  }
+	if zoom < 1.0 {
+		zoom = 1.0
+	}
 
-  if zoom > 45.0 {
-    zooom = 45.0
-  }
+	if zoom > 45.0 {
+		zoom = 45.0
+	}
 }
 
 
 @(private)
-_update_camera_vectors :: proc(camera: ^Camera) {
-	using math
-	using la
+_update_camera_vectors :: proc(using camera: ^Camera) {
 
-	front_x: f32 = cos(to_radians(yaw)) * cos(to_radians(pitch))
-	front_y: f32 = cos(to_radians(pitch))
-	front_z: f32 = sin(to_radians(yaw)) * cos(to_radians(pitch))
+	front_x: f32 = math.cos(la.to_radians(yaw)) * math.cos(la.to_radians(pitch))
+	front_y: f32 = math.sin(la.to_radians(pitch))
+	front_z: f32 = math.sin(la.to_radians(yaw)) * math.cos(la.to_radians(pitch))
 
-	camera.front = vector_normalize(Vec3{front_x, front_y, front_z})
-	camera.right = vector_normalize(vector_cross3(camera.front, camera.world_up))
-	camera.up = vector_normalize(vector_cross3(camera.right, camera.front))
+	front = la.vector_normalize(Vec3{front_x, front_y, front_z})
+	right = la.vector_normalize(la.vector_cross3(camera.front, camera.world_up))
+	up = la.vector_normalize(la.vector_cross3(camera.right, camera.front))
 }
