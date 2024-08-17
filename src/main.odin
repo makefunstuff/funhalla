@@ -209,17 +209,30 @@ main :: proc() {
 		gl.ActiveTexture(gl.TEXTURE1)
 		gl.BindTexture(gl.TEXTURE_2D, texture2)
 
-		trans_vector := linalg.Vector3f32{0.5, -0.5, 0.0}
-		transform := linalg.matrix4_translate(trans_vector)
-		transform *= linalg.matrix4_rotate_f32(
-			f32(glfw.GetTime()),
-			linalg.Vector3f32{0.0, 0.0, 1.0},
+		model := linalg.matrix4_rotate(
+			f32(linalg.to_radians(-55.0)),
+			linalg.Vector3f32{1.0, 0.0, 0.0},
 		)
+		aspect: f32 = 800.0 / 600.0
+		view := linalg.matrix4_translate(linalg.Vector3f32{0.0, 0.0, -3.0})
+		projection := linalg.matrix4_perspective_f32(
+			f32(linalg.to_radians(45.0)),
+			aspect,
+			0.1,
+			100.0,
+		)
+
+		model_location := gl.GetUniformLocation(shdr.id, "model")
+		gl.UniformMatrix4fv(model_location, 1, gl.FALSE, &model[0][0])
+
+		view_location := gl.GetUniformLocation(shdr.id, "view")
+		gl.UniformMatrix4fv(view_location, 1, gl.FALSE, &view[0][0])
+
+		projection_location := gl.GetUniformLocation(shdr.id, "projection")
+		gl.UniformMatrix4fv(projection_location, 1, gl.FALSE, &projection[0][0])
 
 		shader.use(shdr)
 
-		transform_loc := gl.GetUniformLocation(shdr.id, cstring("transform"))
-		gl.UniformMatrix4fv(transform_loc, 1, gl.FALSE, &transform[0, 0])
 
 		gl.BindVertexArray(vao)
 		gl.DrawElements(gl.TRIANGLES, 6, gl.UNSIGNED_INT, nil)
