@@ -335,6 +335,19 @@ main :: proc() {
 
 	gl.Enable(gl.DEPTH_TEST)
 
+	cube_positions: []linalg.Vector3f32 = {
+		linalg.Vector3f32{0.0, 0.0, 0.0},
+		linalg.Vector3f32{2.0, 5.0, -15.0},
+		linalg.Vector3f32{-1.5, -2.2, -2.5},
+		linalg.Vector3f32{-3.8, -2.0, -12.3},
+		linalg.Vector3f32{2.4, -0.4, -3.5},
+		linalg.Vector3f32{-1.7, 3.0, -7.5},
+		linalg.Vector3f32{1.3, -2.0, -2.5},
+		linalg.Vector3f32{1.5, 2.0, -2.5},
+		linalg.Vector3f32{1.5, 0.2, -1.5},
+		linalg.Vector3f32{-1.3, 1.0, -1.5},
+	}
+
 	for !glfw.WindowShouldClose(window) {
 		process_input(&window)
 
@@ -346,9 +359,6 @@ main :: proc() {
 		gl.ActiveTexture(gl.TEXTURE1)
 		gl.BindTexture(gl.TEXTURE_2D, texture2)
 
-		rotation: f32 = f32(glfw.GetTime())
-
-		model := linalg.matrix4_rotate(rotation, linalg.Vector3f32{0.5, 1.0, 0.0})
 
 		aspect: f32 = 800.0 / 600.0
 		view := linalg.matrix4_translate(linalg.Vector3f32{0.0, 0.0, -3.0})
@@ -358,9 +368,6 @@ main :: proc() {
 			0.1,
 			100.0,
 		)
-
-		model_location := gl.GetUniformLocation(shdr.id, "model")
-		gl.UniformMatrix4fv(model_location, 1, gl.FALSE, &model[0][0])
 
 		view_location := gl.GetUniformLocation(shdr.id, "view")
 		gl.UniformMatrix4fv(view_location, 1, gl.FALSE, &view[0][0])
@@ -372,7 +379,20 @@ main :: proc() {
 
 
 		gl.BindVertexArray(vao)
-		gl.DrawArrays(gl.TRIANGLES, 0, 36)
+
+		for cube_position, i in cube_positions {
+			model := linalg.matrix4_translate(cube_position)
+			angle: f32 = linalg.to_radians(20.0 * cast(f32)i)
+			model *= linalg.matrix4_rotate(angle, linalg.Vector3f32{1.0, 0.3, 0.5})
+
+
+			model_location := gl.GetUniformLocation(shdr.id, "model")
+			gl.UniformMatrix4fv(model_location, 1, gl.FALSE, &model[0][0])
+
+
+			gl.DrawArrays(gl.TRIANGLES, 0, 36)
+		}
+
 
 		glfw.SwapBuffers(window)
 		glfw.PollEvents()
