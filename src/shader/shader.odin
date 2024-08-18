@@ -1,5 +1,6 @@
 package shader
 
+import "core:math/linalg"
 import "core:os"
 import "core:strings"
 import gl "vendor:OpenGL"
@@ -10,6 +11,9 @@ Shader :: struct {
 
 SHADER_LOAD_ERROR :: -1
 SHADER_OK :: 0
+
+Vec3 :: linalg.Vector3f32
+Mat4 :: linalg.Matrix4x4f32
 
 shader_init :: proc(vsp, fsp: string) -> (^Shader, int) {
 	assert(os.is_file_path(vsp))
@@ -41,6 +45,14 @@ set_i32 :: proc(using shader: ^Shader, name: cstring, value: i32) {
 
 set_f32 :: proc(using shader: ^Shader, name: cstring, value: f32) {
 	gl.Uniform1f(gl.GetUniformLocation(id, name), value)
+}
+
+set_vec3 :: proc(using shader: ^Shader, name: cstring, value: [^]f32) {
+	gl.Uniform3fv(gl.GetUniformLocation(id, name), 1, value)
+}
+
+set_mat4 :: proc(using shader: ^Shader, name: cstring, value: [^]f32) {
+	gl.UniformMatrix4fv(gl.GetUniformLocation(id, name), 1, gl.FALSE, value)
 }
 
 set_value :: proc {
