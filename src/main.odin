@@ -225,9 +225,9 @@ main :: proc() {
 		shader.use(lighting_shader)
 		object_color := Vec3{1.0, 0.5, 0.31}
 		light_color := Vec3{1.0, 1.0, 1.0}
-		shader.set_vec3(lighting_shader, cstring("object_color"), &object_color[0])
-		shader.set_vec3(lighting_shader, cstring("light_color"), &light_color[0])
-    shader.set_vec3(lighting_shader, cstring("light_position"), &light_pos[0])
+		shader.set_vec3(lighting_shader, cstring("object_color"), &object_color)
+		shader.set_vec3(lighting_shader, cstring("light_color"), &light_color)
+    shader.set_vec3(lighting_shader, cstring("light_position"), &light_pos)
 
 		aspect: f32 = 800.0 / 600.0
 		projection := linalg.matrix4_perspective_f32(
@@ -246,18 +246,18 @@ main :: proc() {
 		gl.UniformMatrix4fv(projection_location, 1, gl.FALSE, &projection[0][0])
 
 		model := linalg.MATRIX4F32_IDENTITY
-		shader.set_mat4(lighting_shader, cstring("model"), &model[0][0])
+		shader.set_mat4(lighting_shader, cstring("model"), &model)
 
 		gl.BindVertexArray(cube_vao)
 		gl.DrawArrays(gl.TRIANGLES, 0, 36)
 
 		shader.use(light_cube_shader)
-		shader.set_mat4(light_cube_shader, cstring("projection"), &projection[0][0])
-		shader.set_mat4(light_cube_shader, cstring("view"), &view[0][0])
+		shader.set_mat4(light_cube_shader, cstring("projection"), &projection)
+		shader.set_mat4(light_cube_shader, cstring("view"), &view)
 
 		model = linalg.matrix4_translate_f32(light_pos)
 		model *= linalg.matrix4_scale_f32(Vec3{0.2, 0.2, 0.2})
-		shader.set_mat4(light_cube_shader, cstring("model"), &model[0][0])
+		shader.set_mat4(light_cube_shader, cstring("model"), &model)
 
 		gl.BindVertexArray(light_cube_vao)
 		gl.DrawArrays(gl.TRIANGLES, 0, 36)

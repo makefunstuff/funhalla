@@ -47,12 +47,12 @@ set_f32 :: proc(using shader: ^Shader, name: cstring, value: f32) {
 	gl.Uniform1f(gl.GetUniformLocation(id, name), value)
 }
 
-set_vec3 :: proc(using shader: ^Shader, name: cstring, value: [^]f32) {
-	gl.Uniform3fv(gl.GetUniformLocation(id, name), 1, value)
+set_vec3 :: proc(using shader: ^Shader, name: cstring, value: ^Vec3) {
+	gl.Uniform3fv(gl.GetUniformLocation(id, name), 1, &value[0])
 }
 
-set_mat4 :: proc(using shader: ^Shader, name: cstring, value: [^]f32) {
-	gl.UniformMatrix4fv(gl.GetUniformLocation(id, name), 1, gl.FALSE, value)
+set_mat4 :: proc(using shader: ^Shader, name: cstring, value: ^Mat4) {
+	gl.UniformMatrix4fv(gl.GetUniformLocation(id, name), 1, gl.FALSE, &value[0][0])
 }
 
 set_value :: proc {
