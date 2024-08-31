@@ -1,7 +1,6 @@
 package shader
 
 import "core:math/linalg"
-import "core:os"
 import "core:strings"
 import gl "vendor:OpenGL"
 
@@ -16,9 +15,6 @@ Vec3 :: linalg.Vector3f32
 Mat4 :: linalg.Matrix4x4f32
 
 shader_init :: proc(vsp, fsp: string) -> (^Shader, int) {
-	assert(os.is_file_path(vsp))
-	assert(os.is_file_path(fsp))
-
 	program_id, ok := gl.load_shaders_file(vsp, fsp)
 
 	if !ok {
@@ -58,5 +54,7 @@ set_mat4 :: proc(using shader: ^Shader, name: cstring, value: ^Mat4) {
 set_value :: proc {
 	set_i32,
 	set_f32,
+	set_vec3,
+	set_mat4,
 	set_bool,
 }
