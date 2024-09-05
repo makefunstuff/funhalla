@@ -398,10 +398,17 @@ main :: proc() {
 
 
 		shader.use(lighting_shader)
-		object_color := Vec3{1.0, 0.5, 0.31}
 		light_color := Vec3{1.0, 1.0, 1.0}
-		shader.set_vec3(lighting_shader, cstring("object_color"), &object_color)
 		shader.set_vec3(lighting_shader, cstring("light_color"), &light_color)
+
+		material_ambient := Vec3{1.0, 0.5, 0.31}
+		material_diffuse := Vec3{1.0, 0.5, 0.31}
+		material_specular := Vec3{0.5, 0.5, 0.5}
+		shader.set_vec3(lighting_shader, cstring("material.ambient"), &material_ambient)
+		shader.set_vec3(lighting_shader, cstring("material.diffuse"), &material_diffuse)
+		shader.set_vec3(lighting_shader, cstring("material.specular"), &material_specular)
+		shader.set_f32(lighting_shader, cstring("material.shininess"), 32.0)
+
 		shader.set_vec3(lighting_shader, cstring("light_position"), &light_pos)
 		shader.set_vec3(lighting_shader, cstring("view_position"), &camera.position)
 
