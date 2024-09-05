@@ -398,16 +398,26 @@ main :: proc() {
 
 
 		shader.use(lighting_shader)
-		light_color := Vec3{1.0, 1.0, 1.0}
 
+		light_color := Vec3 {
+			cast(f32)math.sin(glfw.GetTime() * 2.0),
+			cast(f32)math.sin(glfw.GetTime() * 0.7),
+			cast(f32)math.sin(glfw.GetTime() * 1.3),
+		}
 		material_ambient := Vec3{1.0, 0.5, 0.31}
 		material_diffuse := Vec3{1.0, 0.5, 0.31}
 		material_specular := Vec3{0.5, 0.5, 0.5}
-		shader.set_vec3(lighting_shader, cstring("light_color"), &light_color)
 		shader.set_vec3(lighting_shader, cstring("material.ambient"), &material_ambient)
 		shader.set_vec3(lighting_shader, cstring("material.diffuse"), &material_diffuse)
 		shader.set_vec3(lighting_shader, cstring("material.specular"), &material_specular)
 		shader.set_f32(lighting_shader, cstring("material.shininess"), 32.0)
+
+		light_diffuse := light_color * Vec3{0.5, 0.5, 0.05}
+		light_ambient := light_diffuse * Vec3{0.2, 0.2, 0.2}
+		light_specular := Vec3{1.0, 1.0, 1.0}
+		shader.set_vec3(lighting_shader, cstring("light.ambient"), &light_ambient)
+		shader.set_vec3(lighting_shader, cstring("light.diffuse"), &light_diffuse)
+		shader.set_vec3(lighting_shader, cstring("light.specular"), &light_specular)
 
 		shader.set_vec3(lighting_shader, cstring("light_position"), &light_pos)
 		shader.set_vec3(lighting_shader, cstring("view_position"), &camera.position)
