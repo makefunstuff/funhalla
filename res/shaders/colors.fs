@@ -27,7 +27,7 @@ void main() {
   vec3 reflect_dir = reflect(-light_dir, norm);
   float spec = pow(max(dot(view_dir, reflect_dir), 0.0), 32);
   vec3 specular = specular_strength * spec * light_color;
-  
+
   vec3 result = (ambient + diffuse + specular) * object_color;
   FragColor = vec4(result, 1.0);
 }

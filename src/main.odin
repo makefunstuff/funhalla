@@ -403,6 +403,7 @@ main :: proc() {
 		shader.set_vec3(lighting_shader, cstring("object_color"), &object_color)
 		shader.set_vec3(lighting_shader, cstring("light_color"), &light_color)
 		shader.set_vec3(lighting_shader, cstring("light_position"), &light_pos)
+		shader.set_vec3(lighting_shader, cstring("view_position"), &camera.position)
 
 		aspect: f32 = 800.0 / 600.0
 		projection := linalg.matrix4_perspective_f32(
@@ -426,6 +427,7 @@ main :: proc() {
 		gl.BindVertexArray(cube_vao)
 		gl.DrawArrays(gl.TRIANGLES, 0, 36)
 
+		// lamp cube object drawing
 		shader.use(light_cube_shader)
 		shader.set_mat4(light_cube_shader, cstring("projection"), &projection)
 		shader.set_mat4(light_cube_shader, cstring("view"), &view)
