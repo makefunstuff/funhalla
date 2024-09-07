@@ -133,30 +133,27 @@ main :: proc() {
 	gl.EnableVertexAttribArray(0)
 	gl.VertexAttribPointer(1, 3, gl.FLOAT, gl.FALSE, 8 * size_of(f32), 3 * size_of(f32))
 	gl.EnableVertexAttribArray(1)
-  gl.VertexAttribPointer(2, 2, gl.FLOAT, gl.FALSE, 8 * size_of(f32), 6 * size_of(f32));
+	gl.VertexAttribPointer(2, 2, gl.FLOAT, gl.FALSE, 8 * size_of(f32), 6 * size_of(f32))
 	gl.EnableVertexAttribArray(2)
 
 	gl.GenVertexArrays(1, &light_cube_vao)
 	gl.BindVertexArray(light_cube_vao)
 	gl.BindBuffer(gl.ARRAY_BUFFER, vbo)
-	gl.VertexAttribPointer(0, 3, gl.FLOAT, gl.FALSE, 8  * size_of(f32), 0)
+	gl.VertexAttribPointer(0, 3, gl.FLOAT, gl.FALSE, 8 * size_of(f32), 0)
 	gl.EnableVertexAttribArray(0)
 
 	defer gl.DeleteVertexArrays(1, &light_cube_vao)
 	defer gl.DeleteVertexArrays(1, &cube_vao)
 	defer gl.DeleteBuffers(1, &vbo)
-  diffuse_map := load_texture("res/images/container.png")
-  specular_map := load_texture("res/images/container_specular.png")
+	diffuse_map := load_texture("res/images/container.png")
+	specular_map := load_texture("res/images/container_specular.png")
 
-  if diffuse_map == 0 {
-    fmt.eprintln("could not load texture: exiting...")
-    return
-  }
+	if diffuse_map == 0 {
+		fmt.eprintln("could not load texture: exiting...")
+		return
+	}
 
-	light_cube_shader, err := shader_init(
-		"res/shaders/light_cube.vs",
-		"res/shaders/light_cube.fs",
-	)
+	light_cube_shader, err := shader_init("res/shaders/light_cube.vs", "res/shaders/light_cube.fs")
 	if err == SHADER_LOAD_ERROR {
 		fmt.eprintln("Could not initialize shader")
 		return
@@ -170,9 +167,9 @@ main :: proc() {
 		return
 	}
 
-  shader_use(lighting_shader)
-  shader_set_i32(lighting_shader, "material.diffuse", 0)
-  shader_set_i32(lighting_shader, "material.specular", 1)
+	shader_use(lighting_shader)
+	shader_set_i32(lighting_shader, "material.diffuse", 0)
+	shader_set_i32(lighting_shader, "material.specular", 1)
 	//gl.PolygonMode(gl.FRONT_AND_BACK, gl.LINE)
 
 	gl.Enable(gl.DEPTH_TEST)
@@ -197,11 +194,11 @@ main :: proc() {
 		shader_set_f32(lighting_shader, cstring("material.shininess"), 32.0)
 
 		light_diffuse := Vec3{0.5, 0.5, 0.05}
-		light_ambient :=  Vec3{0.2, 0.2, 0.2}
+		light_ambient := Vec3{0.2, 0.2, 0.2}
 		light_specular := Vec3{1.0, 1.0, 1.0}
-    light_direction := Vec3{-0.2, -1.0, -0.3}
+		light_direction := Vec3{-0.2, -1.0, -0.3}
 
-    shader_set_vec3(lighting_shader, "light_direction", &light_direction)
+		shader_set_vec3(lighting_shader, "light.direction", &light_direction)
 		shader_set_vec3(lighting_shader, cstring("light.ambient"), &light_ambient)
 		shader_set_vec3(lighting_shader, cstring("light.diffuse"), &light_diffuse)
 		shader_set_vec3(lighting_shader, cstring("light.specular"), &light_specular)
@@ -228,23 +225,23 @@ main :: proc() {
 		model := linalg.MATRIX4F32_IDENTITY
 		shader_set_mat4(lighting_shader, cstring("model"), &model)
 
-    gl.ActiveTexture(gl.TEXTURE0)
-    gl.BindTexture(gl.TEXTURE_2D, diffuse_map)
+		gl.ActiveTexture(gl.TEXTURE0)
+		gl.BindTexture(gl.TEXTURE_2D, diffuse_map)
 
-    gl.ActiveTexture(gl.TEXTURE1)
-    gl.BindTexture(gl.TEXTURE_2D, specular_map)
+		gl.ActiveTexture(gl.TEXTURE1)
+		gl.BindTexture(gl.TEXTURE_2D, specular_map)
 
 		gl.BindVertexArray(cube_vao)
 		// gl.DrawArrays(gl.TRIANGLES, 0, 36)
-    for position, i in cube_positions {
-      model = linalg.MATRIX4F32_IDENTITY
-      model *= linalg.matrix4_translate_f32(position)
-      angle : f32 = linalg.to_radians(20.0 * f32(i))
-      model *= linalg.matrix4_rotate_f32(angle, Vec3{1.0, 0.3, 0.5})
+		for position, i in cube_positions {
+			model = linalg.MATRIX4F32_IDENTITY
+			model *= linalg.matrix4_translate_f32(position)
+			angle: f32 = linalg.to_radians(20.0 * f32(i))
+			model *= linalg.matrix4_rotate_f32(angle, Vec3{1.0, 0.3, 0.5})
 
-      shader_set_mat4(lighting_shader, "model", &model)
-      gl.DrawArrays(gl.TRIANGLES, 0, 36)
-    }
+			shader_set_mat4(lighting_shader, "model", &model)
+			gl.DrawArrays(gl.TRIANGLES, 0, 36)
+		}
 
 		//// lamp cube object drawing
 		//shader_use(light_cube_shader)
