@@ -206,6 +206,10 @@ main :: proc() {
 		shader_set_vec3(lighting_shader, cstring("light_position"), &light_pos)
 		shader_set_vec3(lighting_shader, cstring("view_position"), &camera.position)
 
+    shader_set_f32(lighting_shader, "light.constant", 1.0)
+    shader_set_f32(lighting_shader, "light.linear", 0.09)
+    shader_set_f32(lighting_shader, "light.qudratic", 0.032)
+
 		aspect: f32 = 800.0 / 600.0
 		projection := linalg.matrix4_perspective_f32(
 			linalg.to_radians(camera.zoom),
