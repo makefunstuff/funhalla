@@ -187,28 +187,55 @@ main :: proc() {
 
 		shader_use(lighting_shader)
 
-
-		light_ambient := Vec3{0.2, 0.2, 0.2}
-		light_diffuse := Vec3{0.5, 0.5, 0.05}
-		light_specular := Vec3{1.0, 1.0, 1.0}
-
-		shader_set_vec3(lighting_shader, cstring("light.ambient"), &light_ambient)
-		shader_set_vec3(lighting_shader, cstring("light.diffuse"), &light_diffuse)
-		shader_set_vec3(lighting_shader, cstring("light.specular"), &light_specular)
-
-		shader_set_vec3(lighting_shader, cstring("light.position"), &camera.position)
-		shader_set_vec3(lighting_shader, cstring("light.direction"), &camera.front)
-
-    cutoff_angle : f32 = math.cos(linalg.to_radians(f32(12.5)))
-    shader_set_f32(lighting_shader, "light.cutOff", cutoff_angle)
-
 		shader_set_vec3(lighting_shader, cstring("view_position"), &camera.position)
-
-    shader_set_f32(lighting_shader, "light.constant", 1.0)
-    shader_set_f32(lighting_shader, "light.linear", 0.09)
-    shader_set_f32(lighting_shader, "light.qudratic", 0.032)
-
 		shader_set_f32(lighting_shader, cstring("material.shininess"), 32.0)
+
+    // directional light
+    shader_set_vec3(lighting_shader, "dirLight.direction", &Vec3{-0.2, -1.0, -0.3})
+    shader_set_vec3(lighting_shader, "dirLight.ambient", &Vec3{0.05, 0.05, 0.05})
+    shader_set_vec3(lighting_shader, "dirLight.diffuse", &Vec3{0.04, 0.04, 0.04})
+    shader_set_vec3(lighting_shader, "dirLight.specular", &Vec3{0.5, 0.5, 0.5})
+
+    // point lights
+    for &pos, i in point_light_positions {
+      positon_key := fmt.caprintf("pointLights[%i].position", i)
+      ambient_key := fmt.caprintf("pointLights[%i].ambient", i)
+      diffuse_key := fmt.caprintf("pointLights[%i].diffuse", i)
+      specular_key := fmt.caprintf("pointLights[%i].specular", i)
+      constant_key := fmt.caprintf("pointLights[%i].constant", i)
+      linear_key := fmt.caprintf("pointLights[%i].linear", i)
+      quadratic_key := fmt.caprintf("pointLights[%i].quadratic", i)
+
+
+
+      shader_set_vec3(lighting_shader, positon_key, &pos)
+      shader_set_vec3(lighting_shader, ambient_key, &Vec3{0.05, 0.05, 0.05})
+      shader_set_vec3(lighting_shader, diffuse_key, &Vec3{0.8, 0.8, 0.8})
+      shader_set_vec3(lighting_shader, specular_key, &Vec3{1.0, 1.0, 1.0})
+
+      shader_set_f32(lighting_shader, constant_key, 1.0)
+      shader_set_f32(lighting_shader, linear_key, 0.09)
+      shader_set_f32(lighting_shader, quadratic_key, 0.032)
+    }
+
+
+    // spot
+    cutoff_angle : f32 = math.cos(linalg.to_radians(f32(12.5)))
+    outer_cutoff_angle : f32 = math.cos(linalg.to_radians(f32(15.0)))
+
+    shader_set_vec3(lighting_shader, "spotLight.position", &camera.position)
+    shader_set_vec3(lighting_shader, "spotLight.direction", &camera.front)
+    shader_set_vec3(lighting_shader, "spotLight.ambient", &Vec3{0.0, 0.0, 0.0})
+    shader_set_vec3(lighting_shader, "spotLight.diffuse", &Vec3{1.0, 1.0, 1.0})
+    shader_set_vec3(lighting_shader, "spotLight.specular", &Vec3{1.0, 1.0, 1.0})
+
+    shader_set_f32(lighting_shader, "spotLight.constant", 1.0)
+    shader_set_f32(lighting_shader, "spotLight.linear", 0.09)
+    shader_set_f32(lighting_shader, "spotLight.quadratic", 0.032)
+
+
+    shader_set_f32(lighting_shader, "spotLight.cutOff", cutoff_angle)
+    shader_set_f32(lighting_shader, "spotLight.outerCutOff", outer_cutoff_angle)
 
 		aspect: f32 = 800.0 / 600.0
 		projection := linalg.matrix4_perspective_f32(
@@ -236,7 +263,6 @@ main :: proc() {
 		gl.BindTexture(gl.TEXTURE_2D, specular_map)
 
 		gl.BindVertexArray(cube_vao)
-		// gl.DrawArrays(gl.TRIANGLES, 0, 36)
 		for position, i in cube_positions {
 			model = linalg.MATRIX4F32_IDENTITY
 			model *= linalg.matrix4_translate_f32(position)
@@ -244,20 +270,21 @@ main :: proc() {
 			model *= linalg.matrix4_rotate_f32(angle, Vec3{1.0, 0.3, 0.5})
 
 			shader_set_mat4(lighting_shader, "model", &model)
-			gl.DrawArrays(gl.TRIANGLES, 0, 36)
+			gl.DrawArrays(gl.TRIANGLES, 0, 36);
 		}
 
-		// lamp cube object drawing
-		shader_use(light_cube_shader)
-		shader_set_mat4(light_cube_shader, cstring("projection"), &projection)
-		shader_set_mat4(light_cube_shader, cstring("view"), &view)
-
-		model = linalg.matrix4_translate_f32(light_pos)
-		model *= linalg.matrix4_scale_f32(Vec3{0.2, 0.2, 0.2})
-		shader_set_mat4(light_cube_shader, cstring("model"), &model)
+    shader_use(light_cube_shader)
+    shader_set_mat4(light_cube_shader, "projection", &projection)
+    shader_set_mat4(light_cube_shader, "view", &view)
 
 		gl.BindVertexArray(light_cube_vao)
-		gl.DrawArrays(gl.TRIANGLES, 0, 36)
+    for pos, i in point_light_positions {
+			model = linalg.MATRIX4F32_IDENTITY
+			model *= linalg.matrix4_translate_f32(pos)
+		  model *= linalg.matrix4_scale_f32(Vec3{0.2, 0.2, 0.2})
+		  shader_set_mat4(light_cube_shader, cstring("model"), &model)
+		  gl.DrawArrays(gl.TRIANGLES, 0, 36)
+    }
 
 		glfw.SwapBuffers(window)
 		glfw.PollEvents()
