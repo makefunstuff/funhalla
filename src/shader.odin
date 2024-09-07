@@ -1,4 +1,4 @@
-package shader
+package funhalla
 
 import "core:math/linalg"
 import "core:strings"
@@ -10,9 +10,6 @@ Shader :: struct {
 
 SHADER_LOAD_ERROR :: -1
 SHADER_OK :: 0
-
-Vec3 :: linalg.Vector3f32
-Mat4 :: linalg.Matrix4x4f32
 
 shader_init :: proc(vsp, fsp: string) -> (^Shader, int) {
 	program_id, ok := gl.load_shaders_file(vsp, fsp)
@@ -27,34 +24,34 @@ shader_init :: proc(vsp, fsp: string) -> (^Shader, int) {
 	return shader, SHADER_OK
 }
 
-use :: proc(using shader: ^Shader) {
+shader_use :: proc(using shader: ^Shader) {
 	gl.UseProgram(id)
 }
 
-set_bool :: proc(using shader: ^Shader, name: cstring, value: bool) {
+shader_set_bool :: proc(using shader: ^Shader, name: cstring, value: bool) {
 	gl.Uniform1i(gl.GetUniformLocation(id, name), i32(value))
 }
 
-set_i32 :: proc(using shader: ^Shader, name: cstring, value: i32) {
+shader_set_i32 :: proc(using shader: ^Shader, name: cstring, value: i32) {
 	gl.Uniform1i(gl.GetUniformLocation(id, name), value)
 }
 
-set_f32 :: proc(using shader: ^Shader, name: cstring, value: f32) {
+shader_set_f32 :: proc(using shader: ^Shader, name: cstring, value: f32) {
 	gl.Uniform1f(gl.GetUniformLocation(id, name), value)
 }
 
-set_vec3 :: proc(using shader: ^Shader, name: cstring, value: ^Vec3) {
+shader_set_vec3 :: proc(using shader: ^Shader, name: cstring, value: ^Vec3) {
 	gl.Uniform3fv(gl.GetUniformLocation(id, name), 1, &value[0])
 }
 
-set_mat4 :: proc(using shader: ^Shader, name: cstring, value: ^Mat4) {
+shader_set_mat4 :: proc(using shader: ^Shader, name: cstring, value: ^Mat4) {
 	gl.UniformMatrix4fv(gl.GetUniformLocation(id, name), 1, gl.FALSE, &value[0][0])
 }
 
-set_value :: proc {
-	set_i32,
-	set_f32,
-	set_vec3,
-	set_mat4,
-	set_bool,
+shader_set_value :: proc {
+	shader_set_i32,
+	shader_set_f32,
+	shader_set_vec3,
+	shader_set_mat4,
+	shader_set_bool,
 }

@@ -1,10 +1,7 @@
-package camera
+package funhalla
 
 import "core:math"
 import la "core:math/linalg"
-
-Vec3 :: la.Vector3f32
-Mat4 :: la.Matrix4x4f32
 
 CameraMovement :: enum {
 	FORWARD,
