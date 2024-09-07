@@ -116,51 +116,6 @@ main :: proc() {
 	glfw.SetInputMode(window, glfw.CURSOR, glfw.CURSOR_DISABLED)
 
 
-	vertices: []f32 = {
-    // positions          // normals           // texture coords
-    -0.5, -0.5, -0.5,  0.0,  0.0, -1.0,  0.0, 0.0,
-     0.5, -0.5, -0.5,  0.0,  0.0, -1.0,  1.0, 0.0,
-     0.5,  0.5, -0.5,  0.0,  0.0, -1.0,  1.0, 1.0,
-     0.5,  0.5, -0.5,  0.0,  0.0, -1.0,  1.0, 1.0,
-    -0.5,  0.5, -0.5,  0.0,  0.0, -1.0,  0.0, 1.0,
-    -0.5, -0.5, -0.5,  0.0,  0.0, -1.0,  0.0, 0.0,
-
-    -0.5, -0.5,  0.5,  0.0,  0.0, 1.0,   0.0, 0.0,
-     0.5, -0.5,  0.5,  0.0,  0.0, 1.0,   1.0, 0.0,
-     0.5,  0.5,  0.5,  0.0,  0.0, 1.0,   1.0, 1.0,
-     0.5,  0.5,  0.5,  0.0,  0.0, 1.0,   1.0, 1.0,
-    -0.5,  0.5,  0.5,  0.0,  0.0, 1.0,   0.0, 1.0,
-    -0.5, -0.5,  0.5,  0.0,  0.0, 1.0,   0.0, 0.0,
-
-    -0.5,  0.5,  0.5, -1.0,  0.0,  0.0,  1.0, 0.0,
-    -0.5,  0.5, -0.5, -1.0,  0.0,  0.0,  1.0, 1.0,
-    -0.5, -0.5, -0.5, -1.0,  0.0,  0.0,  0.0, 1.0,
-    -0.5, -0.5, -0.5, -1.0,  0.0,  0.0,  0.0, 1.0,
-    -0.5, -0.5,  0.5, -1.0,  0.0,  0.0,  0.0, 0.0,
-    -0.5,  0.5,  0.5, -1.0,  0.0,  0.0,  1.0, 0.0,
-
-     0.5,  0.5,  0.5,  1.0,  0.0,  0.0,  1.0, 0.0,
-     0.5,  0.5, -0.5,  1.0,  0.0,  0.0,  1.0, 1.0,
-     0.5, -0.5, -0.5,  1.0,  0.0,  0.0,  0.0, 1.0,
-     0.5, -0.5, -0.5,  1.0,  0.0,  0.0,  0.0, 1.0,
-     0.5, -0.5,  0.5,  1.0,  0.0,  0.0,  0.0, 0.0,
-     0.5,  0.5,  0.5,  1.0,  0.0,  0.0,  1.0, 0.0,
-
-    -0.5, -0.5, -0.5,  0.0, -1.0,  0.0,  0.0, 1.0,
-     0.5, -0.5, -0.5,  0.0, -1.0,  0.0,  1.0, 1.0,
-     0.5, -0.5,  0.5,  0.0, -1.0,  0.0,  1.0, 0.0,
-     0.5, -0.5,  0.5,  0.0, -1.0,  0.0,  1.0, 0.0,
-    -0.5, -0.5,  0.5,  0.0, -1.0,  0.0,  0.0, 0.0,
-    -0.5, -0.5, -0.5,  0.0, -1.0,  0.0,  0.0, 1.0,
-
-    -0.5,  0.5, -0.5,  0.0,  1.0,  0.0,  0.0, 1.0,
-     0.5,  0.5, -0.5,  0.0,  1.0,  0.0,  1.0, 1.0,
-     0.5,  0.5,  0.5,  0.0,  1.0,  0.0,  1.0, 0.0,
-     0.5,  0.5,  0.5,  0.0,  1.0,  0.0,  1.0, 0.0,
-    -0.5,  0.5,  0.5,  0.0,  1.0,  0.0,  0.0, 0.0,
-    -0.5,  0.5, -0.5,  0.0,  1.0,  0.0,  0.0, 1.0
-	}
-
 	vbo, light_cube_vao, cube_vao: u32
 	gl.GenBuffers(1, &vbo)
 	gl.BindBuffer(gl.ARRAY_BUFFER, vbo)
@@ -244,6 +199,9 @@ main :: proc() {
 		light_diffuse := Vec3{0.5, 0.5, 0.05}
 		light_ambient :=  Vec3{0.2, 0.2, 0.2}
 		light_specular := Vec3{1.0, 1.0, 1.0}
+    light_direction := Vec3{-0.2, -1.0, -0.3}
+
+    shader_set_vec3(lighting_shader, "light_direction", &light_direction)
 		shader_set_vec3(lighting_shader, cstring("light.ambient"), &light_ambient)
 		shader_set_vec3(lighting_shader, cstring("light.diffuse"), &light_diffuse)
 		shader_set_vec3(lighting_shader, cstring("light.specular"), &light_specular)
@@ -277,19 +235,28 @@ main :: proc() {
     gl.BindTexture(gl.TEXTURE_2D, specular_map)
 
 		gl.BindVertexArray(cube_vao)
-		gl.DrawArrays(gl.TRIANGLES, 0, 36)
+		// gl.DrawArrays(gl.TRIANGLES, 0, 36)
+    for position, i in cube_positions {
+      model = linalg.MATRIX4F32_IDENTITY
+      model *= linalg.matrix4_translate_f32(position)
+      angle : f32 = linalg.to_radians(20.0 * f32(i))
+      model *= linalg.matrix4_rotate_f32(angle, Vec3{1.0, 0.3, 0.5})
 
-		// lamp cube object drawing
-		shader_use(light_cube_shader)
-		shader_set_mat4(light_cube_shader, cstring("projection"), &projection)
-		shader_set_mat4(light_cube_shader, cstring("view"), &view)
+      shader_set_mat4(lighting_shader, "model", &model)
+      gl.DrawArrays(gl.TRIANGLES, 0, 36)
+    }
 
-		model = linalg.matrix4_translate_f32(light_pos)
-		model *= linalg.matrix4_scale_f32(Vec3{0.2, 0.2, 0.2})
-		shader_set_mat4(light_cube_shader, cstring("model"), &model)
-
-		gl.BindVertexArray(light_cube_vao)
-		gl.DrawArrays(gl.TRIANGLES, 0, 36)
+		//// lamp cube object drawing
+		//shader_use(light_cube_shader)
+		//shader_set_mat4(light_cube_shader, cstring("projection"), &projection)
+		//shader_set_mat4(light_cube_shader, cstring("view"), &view)
+		//
+		//model = linalg.matrix4_translate_f32(light_pos)
+		//model *= linalg.matrix4_scale_f32(Vec3{0.2, 0.2, 0.2})
+		//shader_set_mat4(light_cube_shader, cstring("model"), &model)
+		//
+		//gl.BindVertexArray(light_cube_vao)
+		//gl.DrawArrays(gl.TRIANGLES, 0, 36)
 
 		glfw.SwapBuffers(window)
 		glfw.PollEvents()
