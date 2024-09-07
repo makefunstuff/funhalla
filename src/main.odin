@@ -196,7 +196,12 @@ main :: proc() {
 		shader_set_vec3(lighting_shader, cstring("light.diffuse"), &light_diffuse)
 		shader_set_vec3(lighting_shader, cstring("light.specular"), &light_specular)
 
-		shader_set_vec3(lighting_shader, cstring("light.position"), &light_pos)
+		shader_set_vec3(lighting_shader, cstring("light.position"), &camera.position)
+		shader_set_vec3(lighting_shader, cstring("light.direction"), &camera.front)
+
+    cutoff_angle : f32 = math.cos(linalg.to_radians(f32(12.5)))
+    shader_set_f32(lighting_shader, "light.cutOff", cutoff_angle)
+
 		shader_set_vec3(lighting_shader, cstring("view_position"), &camera.position)
 
     shader_set_f32(lighting_shader, "light.constant", 1.0)
