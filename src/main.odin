@@ -187,18 +187,11 @@ main :: proc() {
 
 		shader_use(lighting_shader)
 
-		material_ambient := Vec3{1.0, 0.5, 0.31}
-		material_specular := Vec3{0.5, 0.5, 0.5}
-		shader_set_vec3(lighting_shader, cstring("material.ambient"), &material_ambient)
-		shader_set_vec3(lighting_shader, cstring("material.specular"), &material_specular)
-		shader_set_f32(lighting_shader, cstring("material.shininess"), 32.0)
 
-		light_diffuse := Vec3{0.5, 0.5, 0.05}
 		light_ambient := Vec3{0.2, 0.2, 0.2}
+		light_diffuse := Vec3{0.5, 0.5, 0.05}
 		light_specular := Vec3{1.0, 1.0, 1.0}
-		light_direction := Vec3{-0.2, -1.0, -0.3}
 
-		shader_set_vec3(lighting_shader, "light.direction", &light_direction)
 		shader_set_vec3(lighting_shader, cstring("light.ambient"), &light_ambient)
 		shader_set_vec3(lighting_shader, cstring("light.diffuse"), &light_diffuse)
 		shader_set_vec3(lighting_shader, cstring("light.specular"), &light_specular)
@@ -209,6 +202,8 @@ main :: proc() {
     shader_set_f32(lighting_shader, "light.constant", 1.0)
     shader_set_f32(lighting_shader, "light.linear", 0.09)
     shader_set_f32(lighting_shader, "light.qudratic", 0.032)
+
+		shader_set_f32(lighting_shader, cstring("material.shininess"), 32.0)
 
 		aspect: f32 = 800.0 / 600.0
 		projection := linalg.matrix4_perspective_f32(
@@ -247,17 +242,17 @@ main :: proc() {
 			gl.DrawArrays(gl.TRIANGLES, 0, 36)
 		}
 
-		//// lamp cube object drawing
-		//shader_use(light_cube_shader)
-		//shader_set_mat4(light_cube_shader, cstring("projection"), &projection)
-		//shader_set_mat4(light_cube_shader, cstring("view"), &view)
-		//
-		//model = linalg.matrix4_translate_f32(light_pos)
-		//model *= linalg.matrix4_scale_f32(Vec3{0.2, 0.2, 0.2})
-		//shader_set_mat4(light_cube_shader, cstring("model"), &model)
-		//
-		//gl.BindVertexArray(light_cube_vao)
-		//gl.DrawArrays(gl.TRIANGLES, 0, 36)
+		// lamp cube object drawing
+		shader_use(light_cube_shader)
+		shader_set_mat4(light_cube_shader, cstring("projection"), &projection)
+		shader_set_mat4(light_cube_shader, cstring("view"), &view)
+
+		model = linalg.matrix4_translate_f32(light_pos)
+		model *= linalg.matrix4_scale_f32(Vec3{0.2, 0.2, 0.2})
+		shader_set_mat4(light_cube_shader, cstring("model"), &model)
+
+		gl.BindVertexArray(light_cube_vao)
+		gl.DrawArrays(gl.TRIANGLES, 0, 36)
 
 		glfw.SwapBuffers(window)
 		glfw.PollEvents()
