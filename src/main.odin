@@ -191,6 +191,7 @@ main :: proc() {
 	defer gl.DeleteVertexArrays(1, &cube_vao)
 	defer gl.DeleteBuffers(1, &vbo)
   diffuse_map := load_texture("res/images/container.png")
+  specular_map := load_texture("res/images/container_specular.png")
 
   if diffuse_map == 0 {
     fmt.eprintln("could not load texture: exiting...")
@@ -216,6 +217,7 @@ main :: proc() {
 
   shader_use(lighting_shader)
   shader_set_i32(lighting_shader, "material.diffuse", 0)
+  shader_set_i32(lighting_shader, "material.specular", 1)
 	//gl.PolygonMode(gl.FRONT_AND_BACK, gl.LINE)
 
 	gl.Enable(gl.DEPTH_TEST)
@@ -233,19 +235,14 @@ main :: proc() {
 
 		shader_use(lighting_shader)
 
-		light_color := Vec3 {
-			cast(f32)math.sin(glfw.GetTime() * 2.0),
-			cast(f32)math.sin(glfw.GetTime() * 0.7),
-			cast(f32)math.sin(glfw.GetTime() * 1.3),
-		}
 		material_ambient := Vec3{1.0, 0.5, 0.31}
 		material_specular := Vec3{0.5, 0.5, 0.5}
 		shader_set_vec3(lighting_shader, cstring("material.ambient"), &material_ambient)
 		shader_set_vec3(lighting_shader, cstring("material.specular"), &material_specular)
 		shader_set_f32(lighting_shader, cstring("material.shininess"), 32.0)
 
-		light_diffuse := light_color * Vec3{0.5, 0.5, 0.05}
-		light_ambient := light_diffuse * Vec3{0.2, 0.2, 0.2}
+		light_diffuse := Vec3{0.5, 0.5, 0.05}
+		light_ambient :=  Vec3{0.2, 0.2, 0.2}
 		light_specular := Vec3{1.0, 1.0, 1.0}
 		shader_set_vec3(lighting_shader, cstring("light.ambient"), &light_ambient)
 		shader_set_vec3(lighting_shader, cstring("light.diffuse"), &light_diffuse)
@@ -275,6 +272,9 @@ main :: proc() {
 
     gl.ActiveTexture(gl.TEXTURE0)
     gl.BindTexture(gl.TEXTURE_2D, diffuse_map)
+
+    gl.ActiveTexture(gl.TEXTURE1)
+    gl.BindTexture(gl.TEXTURE_2D, specular_map)
 
 		gl.BindVertexArray(cube_vao)
 		gl.DrawArrays(gl.TRIANGLES, 0, 36)
