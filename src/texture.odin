@@ -4,6 +4,7 @@ import gl "vendor:OpenGL"
 import "vendor:stb/image"
 import "core:log"
 
+// TODO(juri) add runtime assertions for path
 load_texture :: proc(path: cstring) -> u32 {
   texture_id : u32
 

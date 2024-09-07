@@ -115,22 +115,6 @@ main :: proc() {
 	glfw.SetScrollCallback(window, mouse_scroll_callback)
 	glfw.SetInputMode(window, glfw.CURSOR, glfw.CURSOR_DISABLED)
 
-	light_cube_shader, err := shader_init(
-		"res/shaders/light_cube.vs",
-		"res/shaders/light_cube.fs",
-	)
-	if err == SHADER_LOAD_ERROR {
-		fmt.eprintln("Could not initialize shader")
-		return
-	}
-
-	lighting_shader: ^Shader
-	lighting_shader, err = shader_init("res/shaders/colors.vs", "res/shaders/colors.fs")
-
-	if err == SHADER_LOAD_ERROR {
-		fmt.eprintln("Could not initialize shader")
-		return
-	}
 
 	vertices: []f32 = {
     // positions          // normals           // texture coords
@@ -177,7 +161,6 @@ main :: proc() {
     -0.5,  0.5, -0.5,  0.0,  1.0,  0.0,  0.0, 1.0
 	}
 
-
 	vbo, light_cube_vao, cube_vao: u32
 	gl.GenBuffers(1, &vbo)
 	gl.BindBuffer(gl.ARRAY_BUFFER, vbo)
@@ -204,6 +187,35 @@ main :: proc() {
 	gl.VertexAttribPointer(0, 3, gl.FLOAT, gl.FALSE, 8  * size_of(f32), 0)
 	gl.EnableVertexAttribArray(0)
 
+	defer gl.DeleteVertexArrays(1, &light_cube_vao)
+	defer gl.DeleteVertexArrays(1, &cube_vao)
+	defer gl.DeleteBuffers(1, &vbo)
+  diffuse_map := load_texture("res/images/container.png")
+
+  if diffuse_map == 0 {
+    fmt.eprintln("could not load texture: exiting...")
+    return
+  }
+
+	light_cube_shader, err := shader_init(
+		"res/shaders/light_cube.vs",
+		"res/shaders/light_cube.fs",
+	)
+	if err == SHADER_LOAD_ERROR {
+		fmt.eprintln("Could not initialize shader")
+		return
+	}
+
+	lighting_shader: ^Shader
+	lighting_shader, err = shader_init("res/shaders/colors.vs", "res/shaders/colors.fs")
+
+	if err == SHADER_LOAD_ERROR {
+		fmt.eprintln("Could not initialize shader")
+		return
+	}
+
+  shader_use(lighting_shader)
+  shader_set_i32(lighting_shader, "material.diffuse", 0)
 	//gl.PolygonMode(gl.FRONT_AND_BACK, gl.LINE)
 
 	gl.Enable(gl.DEPTH_TEST)
@@ -227,10 +239,8 @@ main :: proc() {
 			cast(f32)math.sin(glfw.GetTime() * 1.3),
 		}
 		material_ambient := Vec3{1.0, 0.5, 0.31}
-		material_diffuse := Vec3{1.0, 0.5, 0.31}
 		material_specular := Vec3{0.5, 0.5, 0.5}
 		shader_set_vec3(lighting_shader, cstring("material.ambient"), &material_ambient)
-		shader_set_vec3(lighting_shader, cstring("material.diffuse"), &material_diffuse)
 		shader_set_vec3(lighting_shader, cstring("material.specular"), &material_specular)
 		shader_set_f32(lighting_shader, cstring("material.shininess"), 32.0)
 
@@ -263,6 +273,9 @@ main :: proc() {
 		model := linalg.MATRIX4F32_IDENTITY
 		shader_set_mat4(lighting_shader, cstring("model"), &model)
 
+    gl.ActiveTexture(gl.TEXTURE0)
+    gl.BindTexture(gl.TEXTURE_2D, diffuse_map)
+
 		gl.BindVertexArray(cube_vao)
 		gl.DrawArrays(gl.TRIANGLES, 0, 36)
 
@@ -282,7 +295,4 @@ main :: proc() {
 		glfw.PollEvents()
 	}
 
-	gl.DeleteVertexArrays(1, &light_cube_vao)
-	gl.DeleteVertexArrays(1, &cube_vao)
-	gl.DeleteBuffers(1, &vbo)
 }
