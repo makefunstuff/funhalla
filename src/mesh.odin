@@ -46,7 +46,12 @@ _setup_mesh :: proc(using mesh: ^Mesh) {
   GenBuffers(1, &ebo)
 
   BindVertexArray(vao)
+
   BindBuffer(ARRAY_BUFFER, vbo)
+  BufferData(ARRAY_BUFFER, len(vertices) * size_of(Vertex), &vertices[0], STATIC_DRAW)
 
+  BindBuffer(ELEMENT_ARRAY_BUFFER, ebo)
+  BufferData(ELEMENT_ARRAY_BUFFER, len(indices) * size_of(u32), &indices[0], STATIC_DRAW)
 
+  // vertex positions
 }
