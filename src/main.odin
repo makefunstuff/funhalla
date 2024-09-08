@@ -10,6 +10,7 @@ import "core:math"
 import "core:math/linalg"
 import "core:os"
 
+Vec2 :: linalg.Vector2f32
 Vec3 :: linalg.Vector3f32
 Mat4 :: linalg.Matrix4x4f32
 
